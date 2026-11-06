@@ -1,0 +1,141 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>MANUS 异界：智能觉醒 — 互动影游</title>
+  <link rel="stylesheet" href="css/style.css" />
+</head>
+<body>
+  <div id="app">
+    <canvas id="particles"></canvas>
+
+    <!-- 标题 -->
+    <section id="screen-title" class="screen active">
+      <div class="title-bg" style="background-image:url('media/poster.jpg')"></div>
+      <div class="title-shade"></div>
+      <div class="title-content">
+        <p class="eyebrow">AN INTERACTIVE FILM · INSIDE MANUS</p>
+        <h1 class="logo">MANUS<span>异界</span></h1>
+        <p class="logo-sub">智能觉醒</p>
+        <p class="tagline">你在输入框里敲下一句话，然后被吸进了 Manus 的世界。<br />结构之王正在冻结一切——用 Manus 的每一种能力，打怪、升级、活下去。</p>
+        <div class="menu">
+          <button class="btn primary" id="btn-start">进入异界</button>
+          <button class="btn" id="btn-continue" hidden>继续冒险</button>
+          <button class="btn ghost" id="btn-chapters">章节选择</button>
+          <button class="btn ghost" id="btn-codex">技能图鉴 <span id="codex-count">0/31</span></button>
+          <button class="btn ghost" id="btn-endings">结局收藏 <span id="ending-count">0/3</span></button>
+        </div>
+        <p class="hint">建议打开声音 · 空格暂停 · 数字键 1–4 快速出招 · 犹豫太久会被击中</p>
+      </div>
+      <a class="brand-link" href="https://manus.im/?index=1" target="_blank" rel="noopener">manus.im</a>
+    </section>
+
+    <!-- 播放 -->
+    <section id="screen-player" class="screen">
+      <div class="stage">
+        <video id="video" playsinline preload="auto"></video>
+        <div id="still" class="still"></div>
+        <div class="vignette"></div>
+        <div class="letterbox top"></div>
+        <div class="letterbox bottom"></div>
+      </div>
+
+      <div class="hud">
+        <div class="hud-left">
+          <div class="chapter" id="chapter-label"></div>
+          <div class="stats">
+            <div class="lv">Lv.<b id="lv">1</b></div>
+            <div class="bars">
+              <div class="bar hp"><i id="hp-bar"></i><span id="hp-text">100</span></div>
+              <div class="bar xp"><i id="xp-bar"></i></div>
+            </div>
+            <div class="cards">技能 <b id="skill-count">0</b></div>
+          </div>
+        </div>
+        <div class="hud-actions">
+          <button class="icon-btn" id="btn-mute">声音 开</button>
+          <button class="icon-btn" id="btn-skip">跳过 ›</button>
+          <button class="icon-btn" id="btn-menu">菜单</button>
+        </div>
+      </div>
+
+      <div id="enemy" class="enemy" hidden>
+        <p class="enemy-tag">ENEMY</p>
+        <p class="enemy-name" id="enemy-name"></p>
+        <div class="enemy-hp"><i id="enemy-hp-bar"></i></div>
+      </div>
+
+      <div id="cast" class="cast" hidden>
+        <p class="cast-tag" id="cast-tag"></p>
+        <p class="cast-name" id="cast-name"></p>
+      </div>
+
+      <div class="progress"><div id="progress-bar"></div></div>
+      <div class="subtitle-wrap"><p id="subtitle"></p></div>
+      <div id="paused" class="paused" hidden>已暂停 · 按空格或点击继续</div>
+      <div id="toasts" class="toasts"></div>
+      <div id="hit" class="hit"></div>
+
+      <div id="choice" class="choice" hidden>
+        <p class="choice-prompt" id="choice-prompt"></p>
+        <div class="choice-options" id="choice-options"></div>
+        <div class="timer"><div id="timer-bar"></div></div>
+        <p class="timer-hint" id="timer-hint">犹豫太久会被击中，生命值 -25</p>
+      </div>
+
+      <div id="ending" class="ending" hidden>
+        <p class="eyebrow">ENDING UNLOCKED</p>
+        <h2 id="ending-name"></h2>
+        <p id="ending-text" class="ending-text"></p>
+        <div class="ending-stats" id="ending-stats"></div>
+        <p class="slogan">Less structure, more intelligence.</p>
+        <div class="menu row">
+          <button class="btn primary" id="btn-replay">换一套技能再闯一次</button>
+          <button class="btn" id="btn-ending-codex">查看技能图鉴</button>
+          <a class="btn ghost" href="https://manus.im/?index=1" target="_blank" rel="noopener">去 manus.im 真正用一次</a>
+        </div>
+      </div>
+    </section>
+
+    <!-- 面板：章节 -->
+    <section id="panel-chapters" class="panel" hidden>
+      <div class="panel-inner">
+        <header><h3>章节选择</h3><button class="icon-btn" data-close>关闭</button></header>
+        <p class="panel-sub">去过的章节可以直接重新挑战。</p>
+        <div class="chapter-list" id="chapter-list"></div>
+      </div>
+    </section>
+
+    <!-- 面板：图鉴 -->
+    <section id="panel-codex" class="panel" hidden>
+      <div class="panel-inner wide">
+        <header><h3>技能图鉴</h3><button class="icon-btn" data-close>关闭</button></header>
+        <p class="panel-sub">每一张卡都是 Manus 的一项真实功能。点击已解锁的卡片，重看它的专属视频。</p>
+        <div class="codex" id="codex"></div>
+      </div>
+    </section>
+
+    <!-- 面板：结局 -->
+    <section id="panel-endings" class="panel" hidden>
+      <div class="panel-inner">
+        <header><h3>结局收藏</h3><button class="icon-btn" data-close>关闭</button></header>
+        <div class="endings" id="endings"></div>
+        <button class="btn ghost small" id="btn-reset">清除全部记录</button>
+      </div>
+    </section>
+
+    <!-- 图鉴视频回放 -->
+    <section id="panel-viewer" class="panel" hidden>
+      <div class="viewer">
+        <video id="viewer-video" controls playsinline></video>
+        <div class="viewer-info"><p class="cast-tag" id="viewer-tag"></p><h3 id="viewer-name"></h3><p id="viewer-desc"></p></div>
+        <button class="icon-btn" data-close>关闭</button>
+      </div>
+    </section>
+  </div>
+
+  <script src="js/story.js"></script>
+  <script src="js/main.js"></script>
+</body>
+</html>
